@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Aide - Transcription Vocale</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        html { height: -webkit-fill-available; }
+        body {
+            font-family: 'Atkinson Hyperlegible', sans-serif;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            height: 100dvh;
+            background-color: #f9fafb;
+        }
+        #help-container {
+            flex: 1 1 auto;
+            font-size: 20px; /* Taille de base pour l'aide */
+            line-height: 1.6;
+            touch-action: pan-y;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            padding: 1.5rem;
+        }
+        h1 {
+            font-size: 1.8em;
+            font-weight: 700;
+            margin-bottom: 1rem;
+        }
+        h2 {
+            font-size: 1.4em;
+            font-weight: 700;
+            margin-top: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+        p, ul {
+            margin-bottom: 1rem;
+        }
+        li {
+            margin-left: 1.5rem;
+            list-style-type: disc;
+        }
+        footer {
+            flex-shrink: 0;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="help-container">
+        <h1>Page d'aide</h1>
+        <p>Cette page explique comment utiliser l'application de transcription vocale.</p>
+
+        <h2>À quoi ça sert ?</h2>
+        <p>
+            Cette application transforme votre voix en texte. C'est utile pour prendre des notes rapidement sans avoir à taper sur un clavier.
+        </p>
+
+        <h2>Comment ça marche ?</h2>
+        <p>L'application a deux façons de fonctionner :</p>
+        <ul>
+            <li><b>Mode "Maintenir pour parler" :</b> C'est le mode par défaut. Vous devez appuyer et maintenir le gros bouton bleu avec le micro pour que l'application vous écoute. Quand vous relâchez le bouton, elle arrête d'écouter.</li>
+            <li><b>Mode "Continu" :</b> Si vous préférez ne pas garder le doigt appuyé, vous pouvez activer le mode continu avec le petit interrupteur à droite du micro. Une fois activé, il suffit de cliquer une fois sur le micro pour commencer à parler, et de cliquer à nouveau pour arrêter.</li>
+        </ul>
+
+        <h2>Les boutons</h2>
+        <ul>
+            <li>
+                <b>Micro :</b> Le gros bouton au centre. Utilisez-le pour parler. Il devient rouge quand il vous écoute.
+            </li>
+            <li>
+                <b>Poubelle :</b> Le bouton à gauche. Appuyez dessus pour effacer tout le texte qui a été écrit.
+            </li>
+            <li>
+                <b>Interrupteur (Continu) :</b> Le petit bouton à droite. Il permet de changer entre les deux modes d'écoute.
+            </li>
+        </ul>
+
+        <h2>Agrandir le texte</h2>
+        <p>
+            Si le texte est trop petit ou trop grand, vous pouvez changer sa taille.
+            Sur un téléphone ou une tablette, placez deux doigts sur la zone de texte et écartez-les pour zoomer (agrandir) ou rapprochez-les pour dézoomer (rétrécir). La taille du texte sera sauvegardée pour votre prochaine visite.
+        </p>
+    </div>
+
+    <footer class="w-full p-4 bg-white border-t border-gray-200 shadow-t-lg text-center">
+        <a href="index.html" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg transition-colors duration-300">
+            Retour à l'application
+        </a>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const helpContainer = document.getElementById('help-container');
+
+            // --- GESTION DU ZOOM ---
+            let initialPinchDistance = null;
+            let initialFontSize = 20;
+
+            const getDistance = (touches) => Math.hypot(touches[0].pageX - touches[1].pageX, touches[0].pageY - touches[1].pageY);
+
+            const loadState = () => {
+                const savedFontSize = localStorage.getItem('voiceNoteHelpFontSize_v1');
+                if (savedFontSize) {
+                    helpContainer.style.fontSize = savedFontSize;
+                }
+            };
+
+            helpContainer.addEventListener('touchstart', (e) => {
+                if (e.touches.length === 2) {
+                    e.preventDefault();
+                    helpContainer.style.touchAction = 'none'; // Empêche le scroll pendant le pinch
+                    initialPinchDistance = getDistance(e.touches);
+                    initialFontSize = parseFloat(window.getComputedStyle(helpContainer).fontSize);
+                }
+            }, { passive: false });
+
+            helpContainer.addEventListener('touchmove', (e) => {
+                if (e.touches.length === 2 && initialPinchDistance) {
+                    e.preventDefault();
+                    const currentDistance = getDistance(e.touches);
+                    const scale = currentDistance / initialPinchDistance;
+                    // Limiter la taille de la police entre 12px et 80px
+                    const newSize = Math.max(12, Math.min(initialFontSize * scale, 80));
+                    helpContainer.style.fontSize = `${newSize}px`;
+                }
+            }, { passive: false });
+
+            helpContainer.addEventListener('touchend', (e) => {
+                if (initialPinchDistance) {
+                    // Sauvegarder la nouvelle taille de police
+                    localStorage.setItem('voiceNoteHelpFontSize_v1', helpContainer.style.fontSize);
+                    initialPinchDistance = null;
+                }
+                helpContainer.style.touchAction = 'pan-y'; // Rétablir le scroll
+            });
+
+            loadState();
+        });
+    </script>
+</body>
+</html>
