@@ -4,6 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>Transcription Vocale Accessible</title>
+    <script>
+        // Applique le thème sombre avant le rendu de la page pour éviter le flash
+        if (localStorage.getItem('voiceNoteTheme_v1') === 'dark' || (!('voiceNoteTheme_v1' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
+    </script>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -40,18 +48,60 @@
         .slider:before { position: absolute; content: ""; height: 20px; width: 20px; left: 4px; bottom: 4px; background-color: white; transition: .4s; border-radius: 50%; }
         input:checked + .slider { background-color: #2563eb; }
         input:checked + .slider:before { transform: translateX(22px); }
+
+        /* Styles pour le panneau latéral */
+        #settings-panel {
+            transform: translateX(100%);
+            transition: transform 0.3s ease-in-out;
+        }
+        #settings-panel.is-open {
+            transform: translateX(0);
+        }
     </style>
 </head>
-<body>
+<body class="bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
+
+    <!-- Panneau de paramètres -->
+    <div id="settings-panel" class="fixed top-0 right-0 h-full w-72 bg-white dark:bg-gray-800 shadow-xl z-50 p-6">
+        <h2 class="text-2xl font-bold mb-6 text-gray-800 dark:text-gray-200">Paramètres</h2>
+
+        <!-- Theme Switcher -->
+        <div class="flex items-center justify-between mb-6">
+            <span class="text-gray-700 dark:text-gray-300">Thème Sombre</span>
+            <label class="switch">
+                <input type="checkbox" id="themeToggle">
+                <span class="slider"></span>
+            </label>
+        </div>
+
+        <!-- Language Selector -->
+        <div class="flex items-center justify-between mb-6">
+            <label for="lang-select" class="text-gray-700 dark:text-gray-300">Langue</label>
+            <select id="lang-select" class="bg-gray-200 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 p-2">
+                <option value="fr-FR">Français</option>
+                <option value="en-US">English (US)</option>
+                <option value="es-ES">Español</option>
+                <option value="de-DE">Deutsch</option>
+                <option value="it-IT">Italiano</option>
+            </select>
+        </div>
+
+        <a href="help.html" class="mt-8 inline-block bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+            Aide
+        </a>
+    </div>
+     <!-- Overlay pour fermer le panneau -->
+    <div id="overlay" class="fixed inset-0 bg-black bg-opacity-50 z-40 hidden"></div>
+
 
     <div id="text-container" class="w-full p-4 text-left select-none">
-        <p id="transcript" class="text-gray-900 whitespace-pre-wrap"></p>
+        <p id="transcript" class="text-gray-900 dark:text-gray-200 whitespace-pre-wrap"></p>
     </div>
 
-    <footer class="w-full p-4 bg-white border-t border-gray-200 shadow-t-lg pb-8 md:pb-4">
-        <p id="status" class="text-center text-gray-500 mb-4 h-6 transition-all duration-300">Maintenez pour parler</p>
+    <footer class="w-full p-4 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 shadow-t-lg pb-8 md:pb-4">
+        <p id="status" class="text-center text-gray-500 dark:text-gray-400 mb-4 h-6 transition-all duration-300">Maintenez pour parler</p>
         <div class="relative flex justify-center items-center space-x-5">
-            <button id="clearButton" class="bg-gray-200 hover:bg-gray-300 text-gray-800 rounded-full p-4 transition-transform duration-200 active:scale-90 shadow-md" title="Effacer le texte">
+            <button id="clearButton" class="bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200 rounded-full p-4 transition-transform duration-200 active:scale-90 shadow-md" title="Effacer le texte">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
             </button>
             
@@ -64,14 +114,14 @@
                     <input type="checkbox" id="modeToggle">
                     <span class="slider"></span>
                 </label>
-                <span class="text-xs text-gray-500 mt-1">Continu</span>
+                <span class="text-xs text-gray-500 dark:text-gray-400 mt-1">Continu</span>
             </div>
 
-            <a href="help.html" class="absolute right-4 top-1/2 -translate-y-1/2 bg-gray-200 hover:bg-gray-300 text-gray-600 rounded-full p-3 transition-transform duration-200 active:scale-90 shadow-md" title="Aide">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.546-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            <button id="settingsButton" class="absolute right-4 top-1/2 -translate-y-1/2 bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-600 dark:text-gray-300 rounded-full p-3 transition-transform duration-200 active:scale-90 shadow-md" title="Paramètres">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.532 1.532 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.532 1.532 0 01-.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106A1.532 1.532 0 0111.49 3.17zM10 5.5a4.5 4.5 0 100 9 4.5 4.5 0 000-9zM10 7a3 3 0 100 6 3 3 0 000-6z" clip-rule="evenodd" />
                 </svg>
-            </a>
+            </button>
         </div>
     </footer>
 
@@ -80,9 +130,59 @@
             const micButton = document.getElementById('micButton');
             const clearButton = document.getElementById('clearButton');
             const modeToggle = document.getElementById('modeToggle');
+            const settingsButton = document.getElementById('settingsButton');
+            const settingsPanel = document.getElementById('settings-panel');
+            const overlay = document.getElementById('overlay');
+            const themeToggle = document.getElementById('themeToggle');
+            const langSelect = document.getElementById('lang-select');
             const status = document.getElementById('status');
             const transcriptEl = document.getElementById('transcript');
             const textContainer = document.getElementById('text-container');
+
+            const openSettings = () => {
+                settingsPanel.classList.add('is-open');
+                overlay.classList.remove('hidden');
+            };
+
+            const closeSettings = () => {
+                settingsPanel.classList.remove('is-open');
+                overlay.classList.add('hidden');
+            };
+
+            settingsButton.addEventListener('click', openSettings);
+            overlay.addEventListener('click', closeSettings);
+
+            // --- THEME LOGIC ---
+            const applyTheme = (theme) => {
+                if (theme === 'dark') {
+                    document.documentElement.classList.add('dark');
+                } else {
+                    document.documentElement.classList.remove('dark');
+                }
+                themeToggle.checked = (theme === 'dark');
+            };
+
+            themeToggle.addEventListener('change', () => {
+                const newTheme = themeToggle.checked ? 'dark' : 'light';
+                localStorage.setItem('voiceNoteTheme_v1', newTheme);
+                applyTheme(newTheme);
+            });
+
+            // --- LANGUAGE LOGIC ---
+            const applyLang = (lang) => {
+                recognition.lang = lang;
+                langSelect.value = lang;
+            };
+
+            langSelect.addEventListener('change', () => {
+                const newLang = langSelect.value;
+                localStorage.setItem('voiceNoteLang_v1', newLang);
+                applyLang(newLang);
+                // Redémarrer l'écoute si elle est active pour appliquer la nouvelle langue
+                if (isListening) {
+                    recognition.stop();
+                }
+            });
 
             const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
             if (!SpeechRecognition) {
@@ -101,6 +201,15 @@
             const scrollToBottom = () => textContainer.scrollTop = textContainer.scrollHeight;
 
             const loadState = () => {
+                // Theme
+                const savedTheme = localStorage.getItem('voiceNoteTheme_v1') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+                applyTheme(savedTheme);
+
+                // Language
+                const savedLang = localStorage.getItem('voiceNoteLang_v1') || 'fr-FR';
+                applyLang(savedLang);
+
+                // Transcript
                 finalTranscript = localStorage.getItem('voiceNoteText_v11') || '';
                 transcriptEl.textContent = finalTranscript;
                 textContainer.style.fontSize = localStorage.getItem('voiceNoteFontSize_v11') || '22px';
@@ -162,16 +271,15 @@
             
             recognition.onresult = (event) => {
                 let interimTranscript = '';
-                let finalTranscript_rebuilt = '';
-                for (let i = 0; i < event.results.length; ++i) {
+                for (let i = event.resultIndex; i < event.results.length; ++i) {
                     const transcriptPart = event.results[i][0].transcript;
                     if (event.results[i].isFinal) {
-                        finalTranscript_rebuilt += transcriptPart.trim() + '\n';
+                        // Append the final transcript part, ensuring proper spacing.
+                        finalTranscript += transcriptPart.trim() + '\n';
                     } else {
                         interimTranscript += transcriptPart;
                     }
                 }
-                finalTranscript = finalTranscript_rebuilt;
                 transcriptEl.textContent = finalTranscript + interimTranscript;
                 scrollToBottom();
                 localStorage.setItem('voiceNoteText_v11', finalTranscript);
