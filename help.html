@@ -4,93 +4,78 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>Aide - Transcription Vocale</title>
+    <script>
+        // Applique le thème sombre avant le rendu de la page pour éviter le flash
+        if (localStorage.getItem('voiceNoteTheme_v1') === 'dark' || (!('voiceNoteTheme_v1' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
+    </script>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&display=swap" rel="stylesheet">
     <style>
-        html { height: -webkit-fill-available; }
         body {
             font-family: 'Atkinson Hyperlegible', sans-serif;
-            display: flex;
-            flex-direction: column;
-            height: 100vh;
-            height: 100dvh;
-            background-color: #f9fafb;
-        }
-        #help-container {
-            flex: 1 1 auto;
-            font-size: 20px; /* Taille de base pour l'aide */
-            line-height: 1.6;
-            touch-action: pan-y;
-            overflow-y: auto;
-            -webkit-overflow-scrolling: touch;
-            padding: 1.5rem;
-        }
-        h1 {
-            font-size: 1.8em;
-            font-weight: 700;
-            margin-bottom: 1rem;
-        }
-        h2 {
-            font-size: 1.4em;
-            font-weight: 700;
-            margin-top: 1.5rem;
-            margin-bottom: 0.5rem;
-        }
-        p, ul {
-            margin-bottom: 1rem;
-        }
-        li {
-            margin-left: 1.5rem;
-            list-style-type: disc;
-        }
-        footer {
-            flex-shrink: 0;
         }
     </style>
 </head>
-<body>
+<body class="bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-200 flex flex-col min-h-screen">
 
-    <div id="help-container">
-        <h1>Aide et présentation</h1>
-        <p>Cette page explique le but et le fonctionnement de l'application.</p>
+    <div id="help-container" class="flex-grow p-6 md:p-8 max-w-4xl mx-auto w-full text-lg leading-relaxed">
+        <h1 class="text-4xl font-bold mb-6 text-gray-900 dark:text-gray-100">Aide et présentation</h1>
+        <p class="mb-8">Cette page explique le but et le fonctionnement de l'application.</p>
 
-        <h2>Quelle est la mission de cette application ?</h2>
-        <p>
-            L'objectif principal de cet outil est de <strong>faciliter la communication avec les personnes sourdes ou malentendantes</strong>.
-            Il transforme la parole en texte en temps réel, offrant ainsi un sous-titrage instantané pour les conversations.
-            Ce n'est pas un outil de prise de notes, mais une aide à la communication pour l'accessibilité.
-        </p>
+        <div class="space-y-10">
+            <section>
+                <h2 class="text-3xl font-semibold mb-4 border-b pb-2 border-gray-300 dark:border-gray-700 text-gray-900 dark:text-gray-100">Quelle est la mission de cette application ?</h2>
+                <p>
+                    L'objectif principal de cet outil est de <strong>faciliter la communication avec les personnes sourdes ou malentendantes</strong>.
+                    Il transforme la parole en texte en temps réel, offrant ainsi un sous-titrage instantané pour les conversations.
+                    Ce n'est pas un outil de prise de notes, mais une aide à la communication pour l'accessibilité.
+                </p>
+            </section>
 
-        <h2>Comment l'utiliser ?</h2>
-        <p>L'application a deux façons de fonctionner :</p>
-        <ul>
-            <li><b>Mode "Maintenir pour parler" :</b> C'est le mode par défaut. Vous devez appuyer et maintenir le gros bouton bleu avec le micro pour que l'application vous écoute. Quand vous relâchez le bouton, elle arrête d'écouter.</li>
-            <li><b>Mode "Continu" :</b> Si vous préférez ne pas garder le doigt appuyé, vous pouvez activer le mode continu avec le petit interrupteur à droite du micro. Une fois activé, il suffit de cliquer une fois sur le micro pour commencer à parler, et de cliquer à nouveau pour arrêter.</li>
-        </ul>
+            <section>
+                <h2 class="text-3xl font-semibold mb-4 border-b pb-2 border-gray-300 dark:border-gray-700 text-gray-900 dark:text-gray-100">Comment l'utiliser ?</h2>
+                <p class="mb-4">L'application a deux façons de fonctionner :</p>
+                <ul class="list-disc list-inside space-y-2">
+                    <li><b>Mode "Maintenir pour parler" :</b> C'est le mode par défaut. Vous devez appuyer et maintenir le gros bouton bleu avec le micro pour que l'application vous écoute. Quand vous relâchez le bouton, elle arrête d'écouter.</li>
+                    <li><b>Mode "Continu" :</b> Si vous préférez ne pas garder le doigt appuyé, vous pouvez activer le mode continu avec le petit interrupteur à droite du micro. Une fois activé, il suffit de cliquer une fois sur le micro pour commencer à parler, et de cliquer à nouveau pour arréter.</li>
+                </ul>
+            </section>
 
-        <h2>Les boutons</h2>
-        <ul>
-            <li>
-                <b>Micro :</b> Le gros bouton au centre. Utilisez-le pour parler. Il devient rouge quand il vous écoute.
-            </li>
-            <li>
-                <b>Poubelle :</b> Le bouton à gauche. Appuyez dessus pour effacer tout le texte qui a été écrit.
-            </li>
-            <li>
-                <b>Interrupteur (Continu) :</b> Le petit bouton à droite. Il permet de changer entre les deux modes d'écoute.
-            </li>
-        </ul>
+            <section>
+                <h2 class="text-3xl font-semibold mb-4 border-b pb-2 border-gray-300 dark:border-gray-700 text-gray-900 dark:text-gray-100">Les boutons</h2>
+                <ul class="list-disc list-inside space-y-2">
+                    <li>
+                        <b>Micro :</b> Le gros bouton au centre. Utilisez-le pour parler. Il devient rouge quand il vous écoute.
+                    </li>
+                    <li>
+                        <b>Poubelle :</b> Le bouton à gauche. Appuyez dessus pour effacer tout le texte qui a été écrit.
+                    </li>
+                    <li>
+                        <b>Interrupteur (Continu) :</b> Le petit bouton à droite. Il permet de changer entre les deux modes d'écoute.
+                    </li>
+                     <li>
+                        <b>Paramètres (roue dentée) :</b> Ouvre un panneau pour changer le thème (clair/sombre) et la langue de transcription.
+                    </li>
+                </ul>
+            </section>
 
-        <h2>Agrandir le texte</h2>
-        <p>
-            Si le texte est trop petit ou trop grand, vous pouvez changer sa taille.
-            Sur un téléphone ou une tablette, placez deux doigts sur la zone de texte et écartez-les pour zoomer (agrandir) ou rapprochez-les pour dézoomer (rétrécir). La taille du texte sera sauvegardée pour votre prochaine visite.
-        </p>
+            <section>
+                <h2 class="text-3xl font-semibold mb-4 border-b pb-2 border-gray-300 dark:border-gray-700 text-gray-900 dark:text-gray-100">Agrandir le texte</h2>
+                <p>
+                    Si le texte est trop petit ou trop grand, vous pouvez changer sa taille.
+                    Sur un téléphone ou une tablette, placez deux doigts sur la zone de texte et écartez-les pour zoomer (agrandir) ou rapprochez-les pour dézoomer (rétrécir). La taille du texte sera sauvegardée pour votre prochaine visite.
+                </p>
+            </section>
+        </div>
     </div>
 
-    <footer class="w-full p-4 bg-white border-t border-gray-200 shadow-t-lg text-center">
+    <footer class="w-full p-4 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 shadow-t-lg text-center">
         <a href="index.html" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg transition-colors duration-300">
             Retour à l'application
         </a>
