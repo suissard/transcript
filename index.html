@@ -160,31 +160,30 @@
 
             recognition.onstart = () => updateUIState(true);
             
-            // **REPETITION FIX V4**: Final robust logic
             recognition.onresult = (event) => {
                 let interimTranscript = '';
-                // We only care about what's new since the last final result.
-                for (let i = event.resultIndex; i < event.results.length; ++i) {
+                let finalTranscript_rebuilt = '';
+                for (let i = 0; i < event.results.length; ++i) {
                     const transcriptPart = event.results[i][0].transcript;
                     if (event.results[i].isFinal) {
-                        // Once a part is final, we add it to our master transcript string.
-                        // We add a newline for better formatting between sentences.
-                        finalTranscript += transcriptPart.trim() + '\n';
+                        finalTranscript_rebuilt += transcriptPart.trim() + '\n';
                     } else {
-                        // This is the current, in-progress part.
                         interimTranscript += transcriptPart;
                     }
                 }
-                // The display is always the master transcript + the current in-progress part.
+                finalTranscript = finalTranscript_rebuilt;
                 transcriptEl.textContent = finalTranscript + interimTranscript;
                 scrollToBottom();
+                localStorage.setItem('voiceNoteText_v11', finalTranscript);
             };
 
             recognition.onend = () => {
-                // When recognition stops, save the final state and update UI.
-                localStorage.setItem('voiceNoteText_v11', finalTranscript);
                 isListening = false;
                 updateUIState(false);
+                // Si le mode continu est activé, redémarre la reconnaissance
+                if (isAlwaysOn) {
+                    startListening();
+                }
             };
 
             recognition.onerror = (event) => {
