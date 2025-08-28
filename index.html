@@ -62,12 +62,12 @@
 <body class="bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
 
     <!-- Panneau de paramètres -->
-    <div id="settings-panel" class="fixed top-0 right-0 h-full w-72 bg-white dark:bg-gray-800 shadow-xl z-50 p-6">
-        <h2 class="text-2xl font-bold mb-6 text-gray-800 dark:text-gray-200">Paramètres</h2>
+    <div id="settings-panel" class="fixed top-0 right-0 h-full w-72 bg-white dark:bg-gray-700 shadow-xl z-50 p-6">
+        <h2 class="text-2xl font-bold mb-6 text-gray-800 dark:text-gray-100">Paramètres</h2>
 
         <!-- Theme Switcher -->
         <div class="flex items-center justify-between mb-6">
-            <span class="text-gray-700 dark:text-gray-300">Thème Sombre</span>
+            <span class="text-gray-700 dark:text-gray-100">Thème Sombre</span>
             <label class="switch">
                 <input type="checkbox" id="themeToggle">
                 <span class="slider"></span>
@@ -76,8 +76,8 @@
 
         <!-- Language Selector -->
         <div class="flex items-center justify-between mb-6">
-            <label for="lang-select" class="text-gray-700 dark:text-gray-300">Langue</label>
-            <select id="lang-select" class="bg-gray-200 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 p-2">
+            <label for="lang-select" class="text-gray-700 dark:text-gray-100">Langue</label>
+            <select id="lang-select" class="bg-gray-200 dark:bg-gray-600 border border-gray-300 dark:border-gray-500 text-gray-900 dark:text-gray-100 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 p-2">
                 <option value="fr-FR">Français</option>
                 <option value="en-US">English (US)</option>
                 <option value="es-ES">Español</option>
@@ -94,8 +94,9 @@
     <div id="overlay" class="fixed inset-0 bg-black bg-opacity-50 z-40 hidden"></div>
 
 
-    <div id="text-container" class="w-full p-4 text-left select-none">
+    <div id="text-container" class="relative w-full p-4 text-left select-none">
         <p id="transcript" class="text-gray-900 dark:text-gray-200 whitespace-pre-wrap"></p>
+        <div id="zoom-indicator" class="absolute top-4 right-4 bg-gray-900 bg-opacity-75 text-white text-sm rounded-md px-3 py-1 transition-opacity duration-300 opacity-0 pointer-events-none"></div>
     </div>
 
     <footer class="w-full p-4 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 shadow-t-lg pb-8 md:pb-4">
@@ -138,6 +139,8 @@
             const status = document.getElementById('status');
             const transcriptEl = document.getElementById('transcript');
             const textContainer = document.getElementById('text-container');
+            const zoomIndicator = document.getElementById('zoom-indicator');
+            let zoomTimeout;
 
             const openSettings = () => {
                 settingsPanel.classList.add('is-open');
@@ -198,6 +201,7 @@
             let finalTranscript = '';
             let sessionTranscript = '';
             let isAlwaysOn = false;
+            let userStopped = false;
 
             const scrollToBottom = () => textContainer.scrollTop = textContainer.scrollHeight;
 
@@ -243,6 +247,7 @@
             const startListening = (e) => {
                 if (e) e.preventDefault();
                 if (isListening) return;
+                userStopped = false;
                 isListening = true;
                 recognition.start();
             };
@@ -254,7 +259,16 @@
             };
 
             modeToggle.addEventListener('change', updateMicMode);
-            micButton.addEventListener('click', (e) => isAlwaysOn && (isListening ? stopListening() : startListening(e)));
+            micButton.addEventListener('click', (e) => {
+                if (isAlwaysOn) {
+                    if (isListening) {
+                        userStopped = true;
+                        stopListening();
+                    } else {
+                        startListening(e);
+                    }
+                }
+            });
             micButton.addEventListener('mousedown', (e) => !isAlwaysOn && startListening(e));
             micButton.addEventListener('mouseup', () => !isAlwaysOn && stopListening());
             micButton.addEventListener('mouseleave', () => !isAlwaysOn && stopListening());
@@ -303,7 +317,7 @@
                 localStorage.setItem('voiceNoteText_v11', finalTranscript);
 
                 // Si le mode continu est activé, redémarre la reconnaissance
-                if (isAlwaysOn) {
+                if (isAlwaysOn && !userStopped) {
                     startListening();
                 }
             };
@@ -333,7 +347,17 @@
                     e.preventDefault();
                     const currentDistance = getDistance(e.touches);
                     const scale = currentDistance / initialPinchDistance;
-                    textContainer.style.fontSize = `${Math.max(12, Math.min(initialFontSize * scale, 120))}px`;
+                    const newSize = Math.max(12, Math.min(initialFontSize * scale, 120));
+                    textContainer.style.fontSize = `${newSize}px`;
+
+                    if (newSize === 12 || newSize === 120) {
+                        zoomIndicator.textContent = `Taille ${newSize === 12 ? 'min' : 'max'} atteinte`;
+                        zoomIndicator.classList.remove('opacity-0');
+                        clearTimeout(zoomTimeout);
+                        zoomTimeout = setTimeout(() => {
+                            zoomIndicator.classList.add('opacity-0');
+                        }, 1500);
+                    }
                 }
             }, { passive: false });
 
