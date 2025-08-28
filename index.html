@@ -40,6 +40,12 @@
             overflow-y: auto;
             -webkit-overflow-scrolling: touch;
         }
+        #transcript {
+            color: #111827; /* Equivalent de text-gray-900 */
+        }
+        .dark #transcript {
+            color: #f3f4f6; /* Equivalent de text-gray-100 */
+        }
         footer { flex-shrink: 0; }
         .is-listening { animation: pulse-red 1.5s infinite; }
         @keyframes pulse-red {
@@ -110,9 +116,9 @@
 
 
     <div id="text-container" class="relative w-full p-4 text-left select-none">
-        <p id="transcript" class="text-gray-900 dark:text-gray-200 whitespace-pre-wrap"></p>
-        <div id="zoom-indicator" class="absolute top-4 right-4 bg-gray-900 bg-opacity-75 text-white text-sm rounded-md px-3 py-1 transition-opacity duration-300 opacity-0 pointer-events-none"></div>
+        <p id="transcript" class="whitespace-pre-wrap"></p>
     </div>
+    <div id="zoom-indicator" class="fixed top-4 right-4 bg-gray-900 bg-opacity-75 text-white text-sm rounded-md px-3 py-1 transition-opacity duration-300 opacity-0 pointer-events-none z-50"></div>
 
     <footer class="w-full p-4 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 shadow-t-lg pb-8 md:pb-4">
         <p id="status" class="text-center text-gray-500 dark:text-gray-400 mb-4 h-6 transition-all duration-300">Maintenez pour parler</p>
@@ -388,24 +394,64 @@
                     e.preventDefault();
                     const currentDistance = getDistance(e.touches);
                     const scale = currentDistance / initialPinchDistance;
-                    const newSize = Math.max(minFontSize, Math.min(initialFontSize * scale, maxFontSize));
+                    let newSize = initialFontSize * scale;
+
+                    // Ajout de l'effet de rebond
+                    const bounceMargin = 20; // Marge de rebond de 20px
+                    const softMin = minFontSize - bounceMargin;
+                    const softMax = maxFontSize + bounceMargin;
+                    newSize = Math.max(softMin, Math.min(newSize, softMax));
+
                     textContainer.style.fontSize = `${newSize}px`;
 
-                    if (newSize === minFontSize || newSize === maxFontSize) {
-                        zoomIndicator.textContent = `Taille ${newSize === minFontSize ? 'min' : 'max'} atteinte`;
+                    // Afficher l'indicateur si la taille min/max est atteinte ou dépassée
+                    if (newSize <= minFontSize) {
+                        zoomIndicator.textContent = `Taille min atteinte`;
                         zoomIndicator.classList.remove('opacity-0');
                         clearTimeout(zoomTimeout);
-                        zoomTimeout = setTimeout(() => {
-                            zoomIndicator.classList.add('opacity-0');
-                        }, 1500);
+                    } else if (newSize >= maxFontSize) {
+                        zoomIndicator.textContent = `Taille max atteinte`;
+                        zoomIndicator.classList.remove('opacity-0');
+                        clearTimeout(zoomTimeout);
+                    } else {
+                        // Masquer si on est de retour dans les limites
+                        zoomIndicator.classList.add('opacity-0');
                     }
                 }
             }, { passive: false });
 
             textContainer.addEventListener('touchend', (e) => {
-                if (initialPinchDistance) {
-                    localStorage.setItem('voiceNoteFontSize_v11', textContainer.style.fontSize);
+                 if (initialPinchDistance) {
+                    let finalSize = parseFloat(window.getComputedStyle(textContainer).fontSize);
+                    let needsSnap = false;
+
+                    if (finalSize < minFontSize) {
+                        finalSize = minFontSize;
+                        needsSnap = true;
+                    } else if (finalSize > maxFontSize) {
+                        finalSize = maxFontSize;
+                        needsSnap = true;
+                    }
+
+                    if (needsSnap) {
+                        // Appliquer la transition pour l'effet de rebond
+                        textContainer.style.transition = 'font-size 0.2s ease-out';
+                        textContainer.style.fontSize = `${finalSize}px`;
+                        // Supprimer la transition après l'animation pour ne pas affecter le prochain zoom
+                        setTimeout(() => {
+                            textContainer.style.transition = '';
+                        }, 200);
+                    }
+
+                    // Sauvegarder la taille de police finale
+                    localStorage.setItem('voiceNoteFontSize_v11', `${finalSize}px`);
                     initialPinchDistance = null;
+
+                    // Masquer l'indicateur après un délai
+                    clearTimeout(zoomTimeout);
+                    zoomTimeout = setTimeout(() => {
+                        zoomIndicator.classList.add('opacity-0');
+                    }, 1500);
                 }
                 textContainer.style.touchAction = 'pan-y';
             });
