@@ -86,6 +86,16 @@
             </select>
         </div>
 
+        <!-- Font Size Controls -->
+        <div class="flex items-center justify-between mb-4">
+            <label for="min-font-size" class="text-gray-700 dark:text-gray-100">Taille min police</label>
+            <input type="number" id="min-font-size" class="w-20 bg-gray-200 dark:bg-gray-600 border border-gray-300 dark:border-gray-500 text-gray-900 dark:text-gray-100 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 p-2" min="8" max="40">
+        </div>
+        <div class="flex items-center justify-between mb-6">
+            <label for="max-font-size" class="text-gray-700 dark:text-gray-100">Taille max police</label>
+            <input type="number" id="max-font-size" class="w-20 bg-gray-200 dark:bg-gray-600 border border-gray-300 dark:border-gray-500 text-gray-900 dark:text-gray-100 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 p-2" min="50" max="200">
+        </div>
+
         <a href="help.html" class="mt-8 inline-block bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
             Aide
         </a>
@@ -136,6 +146,8 @@
             const overlay = document.getElementById('overlay');
             const themeToggle = document.getElementById('themeToggle');
             const langSelect = document.getElementById('lang-select');
+            const minFontSizeInput = document.getElementById('min-font-size');
+            const maxFontSizeInput = document.getElementById('max-font-size');
             const status = document.getElementById('status');
             const transcriptEl = document.getElementById('transcript');
             const textContainer = document.getElementById('text-container');
@@ -187,6 +199,22 @@
                 }
             });
 
+            minFontSizeInput.addEventListener('change', (e) => {
+                const newMinSize = parseInt(e.target.value, 10);
+                if (!isNaN(newMinSize) && newMinSize > 0) {
+                    minFontSize = newMinSize;
+                    localStorage.setItem('voiceNoteMinFontSize_v1', minFontSize);
+                }
+            });
+
+            maxFontSizeInput.addEventListener('change', (e) => {
+                const newMaxSize = parseInt(e.target.value, 10);
+                if (!isNaN(newMaxSize) && newMaxSize > minFontSize) {
+                    maxFontSize = newMaxSize;
+                    localStorage.setItem('voiceNoteMaxFontSize_v1', maxFontSize);
+                }
+            });
+
             const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
             if (!SpeechRecognition) {
                 status.textContent = "Désolé, la reconnaissance vocale n'est pas supportée.";
@@ -202,6 +230,8 @@
             let sessionTranscript = '';
             let isAlwaysOn = false;
             let userStopped = false;
+            let minFontSize = 12;
+            let maxFontSize = 120;
 
             const scrollToBottom = () => textContainer.scrollTop = textContainer.scrollHeight;
 
@@ -213,6 +243,12 @@
                 // Language
                 const savedLang = localStorage.getItem('voiceNoteLang_v1') || 'fr-FR';
                 applyLang(savedLang);
+
+                // Font size limits
+                minFontSize = parseInt(localStorage.getItem('voiceNoteMinFontSize_v1') || '12', 10);
+                maxFontSize = parseInt(localStorage.getItem('voiceNoteMaxFontSize_v1') || '120', 10);
+                minFontSizeInput.value = minFontSize;
+                maxFontSizeInput.value = maxFontSize;
 
                 // Transcript
                 finalTranscript = localStorage.getItem('voiceNoteText_v11') || '';
@@ -347,11 +383,11 @@
                     e.preventDefault();
                     const currentDistance = getDistance(e.touches);
                     const scale = currentDistance / initialPinchDistance;
-                    const newSize = Math.max(12, Math.min(initialFontSize * scale, 120));
+                    const newSize = Math.max(minFontSize, Math.min(initialFontSize * scale, maxFontSize));
                     textContainer.style.fontSize = `${newSize}px`;
 
-                    if (newSize === 12 || newSize === 120) {
-                        zoomIndicator.textContent = `Taille ${newSize === 12 ? 'min' : 'max'} atteinte`;
+                    if (newSize === minFontSize || newSize === maxFontSize) {
+                        zoomIndicator.textContent = `Taille ${newSize === minFontSize ? 'min' : 'max'} atteinte`;
                         zoomIndicator.classList.remove('opacity-0');
                         clearTimeout(zoomTimeout);
                         zoomTimeout = setTimeout(() => {
