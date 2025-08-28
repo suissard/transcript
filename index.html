@@ -196,6 +196,7 @@
 
             let isListening = false;
             let finalTranscript = '';
+            let sessionTranscript = '';
             let isAlwaysOn = false;
 
             const scrollToBottom = () => textContainer.scrollTop = textContainer.scrollHeight;
@@ -262,32 +263,45 @@
 
             clearButton.addEventListener('click', () => {
                 finalTranscript = '';
+                sessionTranscript = '';
                 transcriptEl.textContent = '';
                 localStorage.setItem('voiceNoteText_v11', '');
                 status.textContent = "Texte effacé";
             });
 
-            recognition.onstart = () => updateUIState(true);
+            recognition.onstart = () => {
+                sessionTranscript = '';
+                updateUIState(true);
+            };
             
             recognition.onresult = (event) => {
                 let interimTranscript = '';
-                for (let i = event.resultIndex; i < event.results.length; ++i) {
+                let sessionFinal = '';
+
+                for (let i = 0; i < event.results.length; ++i) {
                     const transcriptPart = event.results[i][0].transcript;
                     if (event.results[i].isFinal) {
-                        // Append the final transcript part, ensuring proper spacing.
-                        finalTranscript += transcriptPart.trim() + '\n';
+                        sessionFinal = transcriptPart;
                     } else {
-                        interimTranscript += transcriptPart;
+                        interimTranscript = transcriptPart;
                     }
                 }
-                transcriptEl.textContent = finalTranscript + interimTranscript;
+                sessionTranscript = sessionFinal;
+                transcriptEl.textContent = finalTranscript + sessionTranscript + interimTranscript;
                 scrollToBottom();
-                localStorage.setItem('voiceNoteText_v11', finalTranscript);
+                localStorage.setItem('voiceNoteText_v11', finalTranscript + sessionTranscript);
             };
 
             recognition.onend = () => {
                 isListening = false;
                 updateUIState(false);
+                // Commit the session transcript to the final transcript
+                if (sessionTranscript) {
+                    finalTranscript += sessionTranscript.trim() + '\n';
+                    sessionTranscript = ''; // Clear it
+                }
+                localStorage.setItem('voiceNoteText_v11', finalTranscript);
+
                 // Si le mode continu est activé, redémarre la reconnaissance
                 if (isAlwaysOn) {
                     startListening();
